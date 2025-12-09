@@ -2,7 +2,9 @@ import dotenv from "dotenv";
 import express from "express";
 import cors from "cors";
 import morgan from "morgan";
+import swaggerUi from "swagger-ui-express";
 import itemsRouter from "./routes/items.js";
+import { swaggerSpec } from "./swagger.js";
 
 dotenv.config();
 
@@ -13,8 +15,10 @@ app.use(cors());
 app.use(express.json());
 app.use(morgan("dev"));
 
+app.use("/docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+
 app.get("/", (req, res) => {
-  res.json({ status: "ok", service: "backend", version: "0.1.0" });
+  res.json({ status: "ok", service: "backend", version: "0.1.0", docs: "/docs" });
 });
 
 app.use("/api/items", itemsRouter);

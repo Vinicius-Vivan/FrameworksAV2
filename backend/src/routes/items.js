@@ -39,6 +39,46 @@ const requireAuth = async (req, res, next) => {
   return next();
 };
 
+/**
+ * @swagger
+ * /api/items:
+ *   get:
+ *     summary: Lista os itens do usuario autenticado
+ *     tags: [Items]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Lista de itens
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/Item'
+ *       401:
+ *         description: Token ausente ou invalido
+ *   post:
+ *     summary: Cria um item
+ *     tags: [Items]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/ItemInput'
+ *     responses:
+ *       201:
+ *         description: Item criado
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Item'
+ *       400:
+ *         description: Dados invalidos
+ */
 router.get("/", requireAuth, async (req, res) => {
   const { data, error } = await supabase
     .from("items")
@@ -49,6 +89,75 @@ router.get("/", requireAuth, async (req, res) => {
   return res.json((data || []).map(formatRow));
 });
 
+/**
+ * @swagger
+ * /api/items/{id}:
+ *   get:
+ *     summary: Busca item por ID
+ *     tags: [Items]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID do item (uuid)
+ *     responses:
+ *       200:
+ *         description: Item encontrado
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Item'
+ *       404:
+ *         description: Item nao encontrado
+ *   put:
+ *     summary: Atualiza um item
+ *     tags: [Items]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/ItemInput'
+ *     responses:
+ *       200:
+ *         description: Item atualizado
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Item'
+ *       400:
+ *         description: Dados invalidos
+ *       404:
+ *         description: Item nao encontrado
+ *   delete:
+ *     summary: Remove um item
+ *     tags: [Items]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       204:
+ *         description: Item removido
+ *       404:
+ *         description: Item nao encontrado
+ */
 router.get("/:id", requireAuth, async (req, res) => {
   const { id } = req.params;
   const { data, error } = await supabase.from("items").select("*").eq("id", id).eq("user_id", req.user.id).single();
